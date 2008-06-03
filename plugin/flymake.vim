@@ -103,8 +103,13 @@ endfunction
 
 
 function! s:FlyMakeTemporaryDirectory(dir)
-  let tmp_dir = substitute(system('mktemp -d'), '\r\|\n', '', 'g')
-  call system('cp -a ' . a:dir . '/* ' . tmp_dir)
+  if has('mac')
+    let tmp_dir = substitute(system('mktemp -d -t flymake'), '\r\|\n', '', 'g')
+    call system('cp ' . a:dir . '/* ' . tmp_dir)
+  el
+    let tmp_dir = substitute(system('mktemp -d'), '\r\|\n', '', 'g')
+    call system('cp -a ' . a:dir . '/* ' . tmp_dir)
+  en
   return tmp_dir
 endfunction
 
@@ -128,6 +133,8 @@ function! s:FlyMakeDisplay(buf, type, msg, regexp)
   10 new
   setlocal bufhidden=wipe buftype=nofile noswapfile
   file `=a:buf`
+  redr
+  noremap <buffer> <silent> q :close<cr>
   for n in reverse(sorted_keys)
     for mes in reverse(dic[n])
       call s:FlyMakeSendCommand(a:buf,
